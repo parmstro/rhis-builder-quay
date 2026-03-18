@@ -1,6 +1,6 @@
 ---
 
-# Install container tools and configure firewall for Quay
+# Install container tools, authenticate to registry, and configure firewall
 
 - name: "Ensure container management tools are installed"
   ansible.builtin.dnf:
@@ -14,6 +14,12 @@
     name: "firewalld"
     enabled: true
     state: "started"
+
+- name: "Login to Red Hat container registry"
+  containers.podman.podman_login:
+    registry: "{{ quay_registry }}"
+    username: "{{ quay_registry_username }}"
+    password: "{{ quay_registry_password }}"
 
 - name: "Open Quay HTTP port"
   ansible.posix.firewalld:

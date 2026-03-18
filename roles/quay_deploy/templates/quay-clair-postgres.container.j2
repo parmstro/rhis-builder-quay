@@ -8,14 +8,14 @@ Requires=quay-network-network.service
 Image={{ postgres_image }}:{{ postgres_image_tag }}
 ContainerName=quay-clair-postgres
 Network=quay-network.network
-Volume=quay-clair-pgdata.volume:/var/lib/postgresql/data:Z
+Volume=quay-clair-pgdata.volume:/var/lib/pgsql/data:Z
 EnvironmentFile={{ quay_quadlet_dir }}/quay.env
 
-Environment=POSTGRES_USER=clair
-Environment=POSTGRES_DB=clair
+Environment=POSTGRESQL_USER=clair
+Environment=POSTGRESQL_DATABASE=clair
+Environment=POSTGRESQL_MAX_CONNECTIONS={{ quay_clair_postgres_max_connections }}
 
 PodmanArgs=--cpus={{ quay_clair_postgres_cpus }}
-Exec=postgres -c max_connections={{ quay_clair_postgres_max_connections }}
 
 HealthCmd=pg_isready -U clair -d clair
 HealthInterval=10s
