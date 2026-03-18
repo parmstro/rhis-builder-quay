@@ -1,6 +1,6 @@
 [Unit]
-Description=Clair v4 vulnerability scanner for Quay
-Documentation=https://quay.github.io/clair/
+Description=Clair vulnerability scanner for Red Hat Quay
+Documentation=https://docs.redhat.com/en/documentation/red_hat_quay/
 After=network-online.target quay-network-network.service quay-clair-postgres.service quay.service
 Wants=network-online.target
 Requires=quay-network-network.service quay-clair-postgres.service
