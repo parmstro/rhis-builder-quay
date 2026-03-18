@@ -2,9 +2,9 @@
 
 # Red Hat Quay container images (registry.redhat.io)
 # Authentication to registry.redhat.io is required.
+# quay_registry, quay_registry_username, and quay_registry_password
+# must be provided via inventory (group_vars/quay_servers).
 quay_registry: "registry.redhat.io"
-quay_registry_username: "{{ containerhost_registry_username }}"
-quay_registry_password: "{{ containerhost_registry_password }}"
 
 quay_image: "registry.redhat.io/quay/quay-rhel9"
 quay_image_tag: "v3.16"
