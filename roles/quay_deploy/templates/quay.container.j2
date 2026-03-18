@@ -1,0 +1,21 @@
+[Unit]
+Description=Quay container registry
+Documentation=https://docs.projectquay.io/
+After=network-online.target quay-postgres.service quay-redis.service
+Wants=network-online.target
+Requires=quay-postgres.service quay-redis.service
+
+[Container]
+Image={{ quay_image }}:{{ quay_image_tag }}
+ContainerName=quay
+Pod=quay.pod
+
+Volume={{ quay_config_dir }}:/conf/stack:Z
+Volume=quay-storage.volume:/datastorage:Z
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

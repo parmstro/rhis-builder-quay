@@ -1,0 +1,12 @@
+[Unit]
+Description=Quay backend network
+After=network-online.target
+Wants=network-online.target
+
+[Network]
+NetworkName=quay-backend
+Driver=bridge
+Internal=false
+
+[Install]
+WantedBy=multi-user.target

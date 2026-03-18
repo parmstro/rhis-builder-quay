@@ -1,0 +1,22 @@
+[Unit]
+Description=Valkey (Redis) cache for Quay
+After=network-online.target quay-network-network.service
+Wants=network-online.target
+Requires=quay-network-network.service
+
+[Container]
+Image={{ redis_image }}:{{ redis_image_tag }}
+ContainerName=quay-redis
+Network=quay-network.network
+
+HealthCmd=redis-cli ping
+HealthInterval=10s
+HealthRetries=3
+HealthTimeout=5s
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,50 @@
+---
+
+# Quay container images
+quay_image: "quay.io/projectquay/quay"
+quay_image_tag: "latest"
+clair_image: "quay.io/projectquay/clair"
+clair_image_tag: "4.4.1"
+postgres_image: "docker.io/library/postgres"
+postgres_image_tag: "16"
+redis_image: "docker.io/valkey/valkey"
+redis_image_tag: "latest"
+
+# Quay configuration
+quay_server_hostname: "quay.{{ _global_domain_name | default(ansible_domain) }}"
+quay_preferred_url_scheme: "https"
+quay_external_tls_termination: false
+
+# Published ports
+quay_http_port: 8080
+quay_https_port: 8443
+
+# Storage paths
+quay_config_dir: "/srv/containers/quay/config"
+quay_clair_config_dir: "/srv/containers/quay/clair-config"
+
+# Quadlet file destination (system-level)
+quay_quadlet_dir: "/etc/containers/systemd"
+
+# Feature toggles
+quay_feature_security_scanner: true
+quay_feature_repo_mirror: true
+quay_feature_mailing: false
+quay_repo_mirror_interval: 30
+quay_repo_mirror_tls_verify: true
+
+# Clair resource limits
+quay_clair_cpus: 2
+quay_clair_postgres_cpus: 2
+quay_clair_postgres_max_connections: 300
+
+# Storage backend (LocalStorage by default)
+quay_storage_backend: "LocalStorage"
+quay_storage_path: "/datastorage/registry"
+
+# Firewall
+quay_firewall_zone: "public"
+
+# Superuser (optional - set in host_vars if needed)
+# quay_superusers:
+#   - quayadmin

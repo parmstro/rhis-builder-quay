@@ -1,0 +1,27 @@
+[Unit]
+Description=PostgreSQL database for Quay
+After=network-online.target quay-network-network.service
+Wants=network-online.target
+Requires=quay-network-network.service
+
+[Container]
+Image={{ postgres_image }}:{{ postgres_image_tag }}
+ContainerName=quay-postgres
+Network=quay-network.network
+Volume=quay-pgdata.volume:/var/lib/postgresql/data:Z
+EnvironmentFile={{ quay_quadlet_dir }}/quay.env
+
+Environment=POSTGRES_USER=quay
+Environment=POSTGRES_DB=quay
+
+HealthCmd=pg_isready -U quay -d quay
+HealthInterval=10s
+HealthRetries=5
+HealthTimeout=5s
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

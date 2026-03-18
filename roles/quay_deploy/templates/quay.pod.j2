@@ -1,0 +1,14 @@
+[Unit]
+Description=Pod for the Quay Container Registry Stack
+After=network-online.target quay-network-network.service
+Wants=network-online.target
+Requires=quay-network-network.service
+
+[Pod]
+Network=quay-network.network
+
+PublishPort={{ quay_http_port }}:8080
+PublishPort={{ quay_https_port }}:8443
+
+[Install]
+WantedBy=default.target

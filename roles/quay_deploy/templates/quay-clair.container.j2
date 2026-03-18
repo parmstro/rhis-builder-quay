@@ -1,0 +1,25 @@
+[Unit]
+Description=Clair v4 vulnerability scanner for Quay
+Documentation=https://quay.github.io/clair/
+After=network-online.target quay-network-network.service quay-clair-postgres.service quay.service
+Wants=network-online.target
+Requires=quay-network-network.service quay-clair-postgres.service
+
+[Container]
+Image={{ clair_image }}:{{ clair_image_tag }}
+ContainerName=quay-clair
+Network=quay-network.network
+
+Environment=CLAIR_MODE=combo
+Environment=CLAIR_CONF=/clair/config.yaml
+
+Volume={{ quay_clair_config_dir }}:/clair:Z
+
+PodmanArgs=--cpus={{ quay_clair_cpus }}
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

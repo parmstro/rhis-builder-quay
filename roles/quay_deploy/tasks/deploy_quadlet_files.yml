@@ -1,0 +1,42 @@
+---
+
+# Deploy quadlet unit files to systemd directory
+
+- name: "Deploy Quay network quadlet"
+  ansible.builtin.template:
+    src: "quay-network.network.j2"
+    dest: "{{ quay_quadlet_dir }}/quay-network.network"
+    mode: "0644"
+
+- name: "Deploy Quay volume quadlets"
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ quay_quadlet_dir }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - "quay-pgdata.volume"
+    - "quay-clair-pgdata.volume"
+    - "quay-storage.volume"
+
+- name: "Deploy Quay pod quadlet"
+  ansible.builtin.template:
+    src: "quay.pod.j2"
+    dest: "{{ quay_quadlet_dir }}/quay.pod"
+    mode: "0644"
+
+- name: "Deploy Quay container quadlets"
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ quay_quadlet_dir }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - "quay-postgres.container"
+    - "quay-redis.container"
+    - "quay.container"
+    - "quay-clair-postgres.container"
+    - "quay-clair.container"
+    - "quay-mirror.container"
+
+- name: "Reload systemd to pick up quadlet files"
+  ansible.builtin.systemd_service:
+    daemon_reload: true

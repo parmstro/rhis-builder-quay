@@ -1,0 +1,56 @@
+---
+
+# Start Quay services in the correct order
+# Phase 1: Infrastructure (postgres, redis) - already started in initialize_database
+# Phase 2: Quay application (triggers database migrations on first run)
+# Phase 3: Clair and mirroring
+
+- name: "Start Quay Redis"
+  ansible.builtin.systemd_service:
+    name: "quay-redis.service"
+    state: "started"
+
+- name: "Start Quay application"
+  ansible.builtin.systemd_service:
+    name: "quay.service"
+    state: "started"
+    enabled: true
+
+- name: "Wait for Quay to complete database migrations"
+  ansible.builtin.uri:
+    url: "http://localhost:{{ quay_http_port }}/health/instance"
+    method: GET
+    return_content: true
+    status_code: 200
+  register: quay_health
+  retries: 30
+  delay: 10
+  until: quay_health.status == 200
+
+- name: "Start Clair PostgreSQL"
+  ansible.builtin.systemd_service:
+    name: "quay-clair-postgres.service"
+    state: "started"
+  when: quay_feature_security_scanner
+
+- name: "Wait for Clair PostgreSQL to be ready"
+  ansible.builtin.command: >
+    podman exec quay-clair-postgres pg_isready -U clair -d clair
+  register: clair_pg_ready
+  retries: 30
+  delay: 2
+  until: clair_pg_ready.rc == 0
+  changed_when: false
+  when: quay_feature_security_scanner
+
+- name: "Start Clair vulnerability scanner"
+  ansible.builtin.systemd_service:
+    name: "quay-clair.service"
+    state: "started"
+  when: quay_feature_security_scanner
+
+- name: "Start Quay mirror worker"
+  ansible.builtin.systemd_service:
+    name: "quay-mirror.service"
+    state: "started"
+  when: quay_feature_repo_mirror

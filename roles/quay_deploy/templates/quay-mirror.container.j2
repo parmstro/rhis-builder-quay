@@ -1,0 +1,21 @@
+[Unit]
+Description=Quay repository mirroring worker
+After=network-online.target quay-postgres.service quay-redis.service quay.service
+Wants=network-online.target
+Requires=quay-postgres.service quay-redis.service quay.service
+
+[Container]
+Image={{ quay_image }}:{{ quay_image_tag }}
+ContainerName=quay-mirror
+Pod=quay.pod
+
+Exec=repomirror
+
+Volume={{ quay_config_dir }}:/conf/stack:Z
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,49 @@
+---
+
+# Validate the Quay deployment is healthy
+
+- name: "Verify Quay health endpoint"
+  ansible.builtin.uri:
+    url: "http://localhost:{{ quay_http_port }}/health/instance"
+    method: GET
+    return_content: true
+    status_code: 200
+  register: quay_health_check
+
+- name: "Assert Quay is healthy"
+  ansible.builtin.assert:
+    that:
+      - quay_health_check.status == 200
+    fail_msg: "Quay health check failed"
+    success_msg: "Quay is running and healthy"
+
+- name: "Verify all Quay containers are running"
+  ansible.builtin.command: podman ps --filter name=quay --format {% raw %}"{{ '{{' }}.Names{{ '}}' }}"{% endraw %}
+  register: quay_containers
+  changed_when: false
+
+- name: "Assert core containers are running"
+  ansible.builtin.assert:
+    that:
+      - "'quay' in quay_containers.stdout"
+      - "'quay-postgres' in quay_containers.stdout"
+      - "'quay-redis' in quay_containers.stdout"
+    fail_msg: "Not all core Quay containers are running"
+    success_msg: "All core Quay containers are running"
+
+- name: "Assert Clair containers are running"
+  ansible.builtin.assert:
+    that:
+      - "'quay-clair' in quay_containers.stdout"
+      - "'quay-clair-postgres' in quay_containers.stdout"
+    fail_msg: "Clair containers are not running"
+    success_msg: "Clair containers are running"
+  when: quay_feature_security_scanner
+
+- name: "Assert mirror container is running"
+  ansible.builtin.assert:
+    that:
+      - "'quay-mirror' in quay_containers.stdout"
+    fail_msg: "Quay mirror container is not running"
+    success_msg: "Quay mirror container is running"
+  when: quay_feature_repo_mirror

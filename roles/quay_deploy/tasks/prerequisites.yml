@@ -1,0 +1,46 @@
+---
+
+# Install container tools and configure firewall for Quay
+
+- name: "Ensure container management tools are installed"
+  ansible.builtin.dnf:
+    name:
+      - "@container-management"
+      - "firewalld"
+    state: present
+
+- name: "Ensure firewalld is enabled and started"
+  ansible.builtin.systemd_service:
+    name: "firewalld"
+    enabled: true
+    state: "started"
+
+- name: "Open Quay HTTP port"
+  ansible.posix.firewalld:
+    port: "{{ quay_http_port }}/tcp"
+    zone: "{{ quay_firewall_zone }}"
+    permanent: true
+    state: enabled
+
+- name: "Open Quay HTTPS port"
+  ansible.posix.firewalld:
+    port: "{{ quay_https_port }}/tcp"
+    zone: "{{ quay_firewall_zone }}"
+    permanent: true
+    state: enabled
+
+- name: "Reload firewalld"
+  ansible.builtin.command: firewall-cmd --reload
+  changed_when: true
+
+- name: "Create Quay config directory"
+  ansible.builtin.file:
+    path: "{{ quay_config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: "Create Clair config directory"
+  ansible.builtin.file:
+    path: "{{ quay_clair_config_dir }}"
+    state: directory
+    mode: "0755"

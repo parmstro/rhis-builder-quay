@@ -1,0 +1,30 @@
+[Unit]
+Description=PostgreSQL database for Clair vulnerability scanner
+After=network-online.target quay-network-network.service
+Wants=network-online.target
+Requires=quay-network-network.service
+
+[Container]
+Image={{ postgres_image }}:{{ postgres_image_tag }}
+ContainerName=quay-clair-postgres
+Network=quay-network.network
+Volume=quay-clair-pgdata.volume:/var/lib/postgresql/data:Z
+EnvironmentFile={{ quay_quadlet_dir }}/quay.env
+
+Environment=POSTGRES_USER=clair
+Environment=POSTGRES_DB=clair
+
+PodmanArgs=--cpus={{ quay_clair_postgres_cpus }}
+Exec=postgres -c max_connections={{ quay_clair_postgres_max_connections }}
+
+HealthCmd=pg_isready -U clair -d clair
+HealthInterval=10s
+HealthRetries=5
+HealthTimeout=5s
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

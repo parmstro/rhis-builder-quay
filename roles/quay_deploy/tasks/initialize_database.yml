@@ -1,0 +1,23 @@
+---
+
+# Start PostgreSQL and install required extensions before Quay can run migrations
+
+- name: "Start Quay PostgreSQL"
+  ansible.builtin.systemd_service:
+    name: "quay-postgres.service"
+    state: "started"
+
+- name: "Wait for Quay PostgreSQL to be ready"
+  ansible.builtin.command: >
+    podman exec quay-postgres pg_isready -U quay -d quay
+  register: pg_ready
+  retries: 30
+  delay: 2
+  until: pg_ready.rc == 0
+  changed_when: false
+
+- name: "Install pg_trgm extension for Quay database"
+  ansible.builtin.command: >
+    podman exec quay-postgres psql -U quay -d quay -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+  register: pg_trgm_result
+  changed_when: "'CREATE EXTENSION' in pg_trgm_result.stdout"
